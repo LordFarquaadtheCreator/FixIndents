@@ -16,7 +16,7 @@ namespace FixIndents
             // create new file
             // dump data to new file (optionally ask if save to original file
             List<string> data = GetData("C:\\Users\\FFaruqi\\Desktop\\LAD\\LAD_App\\LAD\\Web.config");
-            
+            //Console.WriteLine(string.Join("LINE\n", data));
         }
 
         static List<string> GetData(string path)
@@ -26,23 +26,25 @@ namespace FixIndents
                 throw new Exception("File does not exist!");
             }
             List<string> res = new List<string>();
+            char[] toRemove = { '\t', ' ', '\n' };
 
             using (FileStream fs = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.None))
             {
                 byte[] b = new byte[1024];
                 UTF8Encoding temp = new UTF8Encoding(true);
-                string line;
+                string[] lines;
 
                 while (fs.Read(b, 0, b.Length) > 0)
                 {
-                    line = temp.GetString(b);
-                    res.Add(line);
+                    lines = temp.GetString(b).Split('\n');
+                    foreach (string line in lines)
+                    {
+                        res.Add(line.Trim(toRemove));
+                    }
                 }
             }
 
             return res;
         }
-        
-        static 
     }
 }
