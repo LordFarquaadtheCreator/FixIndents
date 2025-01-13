@@ -15,7 +15,7 @@ namespace FixIndents
             // dump data to new file (optionally ask if save to original file
             List<string> data = GetData("C:\\Users\\FFaruqi\\Desktop\\LAD\\LAD_App\\LAD\\Web.config");
             data = ApplyIndents(data);
-            SaveToFile(data, "../../../output.txt");
+            SaveToFile(data, "../../../Web.config");
         }
 
         static List<string> GetData(string path)
@@ -46,14 +46,21 @@ namespace FixIndents
 
         static List<string> ApplyIndents(List<string> data)
         {
+            Dictionary<string, string> toIgnore = new Dictionary<string, string>();
+            toIgnore.Add("<?", "?>");
+            toIgnore.Add("<!--", "-->");
+            toIgnore.Add("<", "/>");
+
             int numIndents = 0;
             string line;
             bool hasBegin;
             bool hasCloseEnd;
             bool hasClose;
+            bool ignore;
 
             for (int i = 0; i < data.Count; i++)
             {
+                ignore = false;
                 line = data[i];
                 if (line.Length < 4) continue;
 
@@ -61,10 +68,15 @@ namespace FixIndents
                 hasCloseEnd = (line[line.Length - 1] == '>' && line[line.Length - 2] == '/');
                 hasClose = (line[0] == '<' && line[1] == '/');
 
-                if (hasClose) numIndents--;
+                if (hasClose || hasCloseEnd && !hasBegin) numIndents--;
                 data[i] = (new string('\t', numIndents)) + data[i];
 
-                if (hasBegin && hasCloseEnd) continue;
+                foreach (string key in toIgnore.Keys) {
+                    if (line.Contains(key) && line.Contains(toIgnore[key])) ignore = true;
+                }
+
+                if (ignore) continue;
+                
                 if (hasBegin) numIndents++;
             }
 
