@@ -10,16 +10,12 @@ namespace FixIndents
     {
         static void Main(string[] args)
         {
-            // obtain data
-            // parse line by line
-            // maintain # indents by watching for < (+1) and /> (-1)
-            // apply indents accordingly
+            TestApplyIndents();
             // create new file
             // dump data to new file (optionally ask if save to original file
-            //List<string> data = GetData("C:\\Users\\FFaruqi\\Desktop\\LAD\\LAD_App\\LAD\\Web.config");
-            //data = ApplyIndents(data);
-            //Console.WriteLine(string.Join("\n", data));
-            TestApplyIndents();
+            List<string> data = GetData("C:\\Users\\FFaruqi\\Desktop\\LAD\\LAD_App\\LAD\\Web.config");
+            data = ApplyIndents(data);
+            SaveToFile(data, "../../../output.txt");
         }
 
         static List<string> GetData(string path)
@@ -31,24 +27,22 @@ namespace FixIndents
             List<string> res = new List<string>();
             char[] toRemove = { '\t', ' ', '\n' };
 
-            using (FileStream fs = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.None))
+            using (StreamReader sr = new StreamReader(path))
             {
-                byte[] b = new byte[1024];
-                UTF8Encoding temp = new UTF8Encoding(true);
-                string[] lines;
-
-                while (fs.Read(b, 0, b.Length) > 0)
+                string line;
+                while ((line = sr.ReadLine()) != null)
                 {
-                    lines = temp.GetString(b).Split('\n');
-                    foreach (string line in lines)
-                    {
-                        res.Add(line.Trim(toRemove));
-                    }
+                    res.Add(line.Trim(toRemove));
                 }
             }
-
             return res;
         }
+
+        static void SaveToFile(List<string> data, string path)
+        {
+            File.WriteAllLines(path, data);
+        }
+
 
         static List<string> ApplyIndents(List<string> data)
         {
@@ -60,8 +54,7 @@ namespace FixIndents
 
             for (int i = 0; i < data.Count; i++)
             {
-                line = data[i]; 
-
+                line = data[i];
                 if (line.Length < 4) continue;
 
                 hasBegin = line[0] == '<' && line[1] != '/';
@@ -118,12 +111,31 @@ namespace FixIndents
             testAnswer = new List<string> { "<div>", "\t<div>", "\t\t<div>", "\t\t</div>", "\t</div>", "</div>" };
             Debug.Assert(ListEqual(ApplyIndents(testInput), testAnswer) == true);
 
-
             testInput = new List<string> { "<div>", "</div>", "<div>", "</div>", "<div>", "</div>" };
             Debug.Assert(ListEqual(ApplyIndents(testInput), testInput) == true);
 
             testInput = new List<string> { "<div>", "<div>", "</div>", "</div>", "<div>", "</div>" };
             testAnswer = new List<string> { "<div>", "\t<div>", "\t</div>", "</div>", "<div>", "</div>" };
+            Debug.Assert(ListEqual(ApplyIndents(testInput), testAnswer) == true);
+
+            testInput = new List<string> { "<configSections>", "<sectionGroup name=\"businessObjects\">", "<sectionGroup name=\"crystalReports\">",
+                "<section name=\"rptBuildProvider\" type=\"CrystalDecisions.Shared.RptBuildProviderHandler, CrystalDecisions.Shared, Version=13.0.2000.0, " +
+                "Culture=neutral, PublicKeyToken=692fbea5521e1304, Custom=null\"/>", "</sectionGroup>", "</sectionGroup>", "<sectionGroup name=\"elmah\">",
+                "<section name=\"security\" requirePermission=\"false\" type=\"Elmah.SecuritySectionHandler, Elmah\"/>",
+                "<section name=\"errorLog\" requirePermission=\"false\" type=\"Elmah.ErrorLogSectionHandler, Elmah\" />",
+                "<section name=\"errorMail\" requirePermission=\"false\" type=\"Elmah.ErrorMailSectionHandler, Elmah\" />",
+                "<section name=\"errorFilter\" requirePermission=\"false\" type=\"Elmah.ErrorFilterSectionHandler, Elmah\"/>",
+                "</sectionGroup>", "</configSections>"
+            };
+            testAnswer = new List<string> { "<configSections>", "\t<sectionGroup name=\"businessObjects\">", "\t\t<sectionGroup name=\"crystalReports\">",
+                "\t\t\t<section name=\"rptBuildProvider\" type=\"CrystalDecisions.Shared.RptBuildProviderHandler, CrystalDecisions.Shared, Version=13.0.2000.0, " +
+                "Culture=neutral, PublicKeyToken=692fbea5521e1304, Custom=null\"/>", "\t\t</sectionGroup>", "\t</sectionGroup>", "\t<sectionGroup name=\"elmah\">",
+                "\t\t<section name=\"security\" requirePermission=\"false\" type=\"Elmah.SecuritySectionHandler, Elmah\"/>",
+                "\t\t<section name=\"errorLog\" requirePermission=\"false\" type=\"Elmah.ErrorLogSectionHandler, Elmah\" />",
+                "\t\t<section name=\"errorMail\" requirePermission=\"false\" type=\"Elmah.ErrorMailSectionHandler, Elmah\" />",
+                "\t\t<section name=\"errorFilter\" requirePermission=\"false\" type=\"Elmah.ErrorFilterSectionHandler, Elmah\"/>",
+                "\t</sectionGroup>", "</configSections>"
+            };
             Debug.Assert(ListEqual(ApplyIndents(testInput), testAnswer) == true);
         }
     }
