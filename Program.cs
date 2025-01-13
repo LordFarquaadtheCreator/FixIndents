@@ -10,12 +10,23 @@ namespace FixIndents
     {
         static void Main(string[] args)
         {
-            TestApplyIndents();
-            // create new file
-            // dump data to new file (optionally ask if save to original file
-            List<string> data = GetData("C:\\Users\\FFaruqi\\Desktop\\LAD\\LAD_App\\LAD\\Web.config");
+            try 
+            {
+                TestApplyIndents();
+            } catch (Exception _)
+            {
+                Console.WriteLine("Tests failed, please revert to a stable build");
+                return;
+            }
+
+            Console.WriteLine("Path to file to fix");
+            string path = Console.ReadLine();
+            Console.WriteLine("Path to save output to (absolute path)");
+            string outPath = Console.ReadLine();
+            
+            List<string> data = GetData(path);
             data = ApplyIndents(data);
-            SaveToFile(data, "../../../Web.config");
+            SaveToFile(data, "../../../../" + outPath);
         }
 
         static List<string> GetData(string path)
@@ -42,7 +53,6 @@ namespace FixIndents
         {
             File.WriteAllLines(path, data);
         }
-
 
         static List<string> ApplyIndents(List<string> data)
         {
