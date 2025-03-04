@@ -13,20 +13,40 @@ namespace FixIndents
             try 
             {
                 TestApplyIndents();
-            } catch (Exception _)
+            } catch (Exception e)
             {
                 Console.WriteLine("Tests failed, please revert to a stable build");
                 return;
             }
+            Console.WriteLine("All paths must be absolute!");
 
-            Console.WriteLine("Path to file to fix");
-            string path = Console.ReadLine();
-            Console.WriteLine("Path to save output to (absolute path)");
-            string outPath = Console.ReadLine();
+            string path = Path.GetFullPath(GetRealPath("Path to file to fix"));
+            string outPath = Path.GetFullPath(GetRealPath("Path to save output to"));
             
             List<string> data = GetData(path);
             data = ApplyIndents(data);
-            SaveToFile(data, "../../../../" + outPath);
+            SaveToFile(data, outPath);
+        }
+
+        static string GetRealPath(string prompt)
+        {
+            bool pathIsNotReal = true;
+            string path = string.Empty;
+
+            while (pathIsNotReal)
+            {
+                if (!File.Exists(path))
+                {
+                    Console.WriteLine(prompt);
+                    path = Console.ReadLine();
+                }
+                else
+                {
+                    pathIsNotReal = false;
+                }
+            }
+
+            return path;
         }
 
         static List<string> GetData(string path)
